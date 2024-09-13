@@ -4,23 +4,26 @@ import openai
 
 openai.api_key = st.secrets["mykey"]
 
-# Summarization function
+# Summarization Function
 def summarize_text(input_text, language):
     prompt = f"Summarize this paragraph in {language}: {input_text}"
 
     try:
         response = openai.ChatCompletion.create(
-            engine="gpt-3.5-turbo",
-            prompt=prompt,
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that summarizes text."},
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=150,
-            n=1,
-            stop=None,
             temperature=0.7,
         )
-        summary = response.choices[0].text.strip()
+        # The completion for ChatCompletion API is in 'message' -> 'content'
+        summary = response.choices[0].message['content'].strip()
         return summary
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 
 
