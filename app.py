@@ -9,7 +9,7 @@ def summarize_text(input_text, language):
     prompt = f"Summarize this paragraph in {language}: {input_text}"
 
     try:
-        response = openai.Completion.create(
+        response = openai.ChatCompletion.create(
             engine="gpt-3.5-turbo",
             prompt=prompt,
             max_tokens=150,
