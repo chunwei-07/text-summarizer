@@ -10,7 +10,7 @@ def summarize_text(input_text, language):
 
     try:
         response = openai.Completion.create(
-            engine="GPT-3.5-Turbo",
+            engine="gpt-3.5-turbo",
             prompt=prompt,
             max_tokens=150,
             n=1,
