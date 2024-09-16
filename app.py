@@ -56,14 +56,23 @@ if summary_type == "Paragraph":
 # Main area for text input
 st.write("## Enter your text below:")
 
+# Display text area
 input_text = st.text_area(
     "Write your paragraph here:",
     height=200
 )
 
+# Calculate word count of input text
+word_count = len(input_text.split())
+
+# Display word count information
+st.write(f"Word count: {word_count}/800 words")
+
 # Output
 if st.button("Summarize"):
-    if input_text:
+    if word_count > 800:
+        st.warning("Your input exceeds the 800-word limit. Please shorten your text.")
+    elif input_text:
         for language in languages:
             st.write(f"### Summary in {language}:")
             summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
