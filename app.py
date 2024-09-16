@@ -43,14 +43,14 @@ if not languages:
 # Summarization type (bullet points or paragraph)
 summary_type = st.sidebar.radio(
     "Choose summarization type",
-    ("bullet points", "paragraph")
+    ("Bullet points", "Paragraph")
 )
 
 # Additional settings for paragraph summarization
 if summary_type == "paragraph":
     length = st.sidebar.radio(
         "Choose summary length",
-        ("short", "long")
+        ("Short", "Long")
     )
 
 # Main area for text input
