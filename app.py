@@ -45,6 +45,7 @@ def count_words(text):
 st.title("Multilingual Text Summarizer")
 
 # Sidebar for language selection
+st.sidebar.header("Settings")
 input_language = st.sidebar.selectbox(
     "Select the input language",
     options=["English", "Malay", "Chinese"],
