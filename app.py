@@ -2,6 +2,7 @@
 import streamlit as st
 import openai
 import jieba   # For Chinese word segmentation
+import re
 
 openai.api_key = st.secrets["mykey"]
 
@@ -27,11 +28,16 @@ def summarize_text(input_text, language, summary_type, length="Short"):
     except Exception as e:
         return f"Error: {str(e)}"
 
+# Function to check if text contains primarily Chinese characters
+def is_chinese(text):
+    # Count Chinese characters using a regular expression
+    return bool(re.search('[\u4e00-\u9fff]', text))
+
 # Word count function for Chinese and other languages
 def count_words(text, language):
-    if language == "Chinese":
+    if is_chinese(text):  # If the text contains Chinese character
         words = jieba.lcut(text)
-    else:
+    else:                 # Default to splitting by spaces for non-Chinese languages
         words = text.split()
     return len(words)
 
@@ -74,7 +80,7 @@ input_text = st.text_area(
 )
 
 # Calculate word count for selected languages
-word_count = count_words(st.session_state["input_text"], input_language)
+word_count = count_words(st.session_state["input_text"])
 
 # Display word count information
 st.write(f"Word count: {word_count}/800 words")
