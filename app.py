@@ -63,9 +63,7 @@ input_text = st.text_area(
 
 # Clear button functionality
 if st.button("Clear"):
-    input_text = st.text_area(
-        height=200
-    )  # Reset input text
+    input_text = " "  # Reset input text
 
 # Output
 if st.button("Summarize"):
