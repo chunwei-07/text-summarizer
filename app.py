@@ -56,24 +56,10 @@ if summary_type == "Paragraph":
 # Main area for text input
 st.write("## Enter your text below:")
 
-# Use session state to store the text input
-if "input_text" not in st.session_state:
-    st.session_state["input_text"] = ""
-
-# Display text area and link it to session state
 input_text = st.text_area(
     "Write your paragraph here:",
-    value=st.session_state["input_text"],
     height=200
 )
-
-# Clear button functionality
-if st.button("Clear"):
-    st.session_state["input_text"] = ""  # Reset session state input text
-    st.experimental_set_query_params()   # Force page reload
-
-# Update session state when text area input changes
-st.session_state["input_text"] = input_text
 
 # Output
 if st.button("Summarize"):
