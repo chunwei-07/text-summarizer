@@ -47,7 +47,7 @@ summary_type = st.sidebar.radio(
 )
 
 # Additional settings for paragraph summarization
-if summary_type == "paragraph":
+if summary_type == "Paragraph":
     length = st.sidebar.radio(
         "Choose summary length",
         ("Short", "Long")
