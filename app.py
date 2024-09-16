@@ -18,7 +18,7 @@ def summarize_text(input_text, language, summary_type, length="Short"):
                 {"role": "system", "content": "You are a helpful assistant that summarizes text."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=150 if length == "short" else 300,
+            max_tokens=150 if length == "Short" else 300,
             temperature=0.7,
         )
         summary = response.choices[0].message['content'].strip()
@@ -71,7 +71,7 @@ if st.button("Summarize"):
     if input_text:
         for language in languages:
             st.write(f"### Summary in {language}:")
-            summary = summarize_text(input_text, language, summary_type, length if summary_type == "paragraph" else None)
+            summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
             st.write(summary)
     else:
         st.warning("Please enter some text to summarize.")
