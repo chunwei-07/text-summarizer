@@ -1,6 +1,7 @@
 # Import necessary libraries
 import streamlit as st
 import openai
+import jieba   # For Chinese word segmentation
 
 openai.api_key = st.secrets["mykey"]
 
@@ -25,6 +26,14 @@ def summarize_text(input_text, language, summary_type, length="Short"):
         return summary
     except Exception as e:
         return f"Error: {str(e)}"
+
+# Word count function for Chinese and other languages
+def count_words(text, language):
+    if language == "Chinese":
+        words = jieba.lcut(text)
+    else:
+        words = text.split()
+    return len(words)
 
 # Streamlit UI
 st.title("Multilingual Text Summarizer")
@@ -68,8 +77,13 @@ input_text = st.text_area(
     key="input_text",    # Use key to trigger session state update
 )
 
-# Calculate word count of input text
-word_count = len(st.session_state["input_text"].split())
+# Calculate word count for selected languages
+if languages:
+  primary_language = languages[0]  # Assume first selected language for word count
+else:
+  primary_language = "English"
+
+word_count = count_words(st.session_state["input_text"], primary_language)
 
 # Display word count information
 st.write(f"Word count: {word_count}/800 words")
