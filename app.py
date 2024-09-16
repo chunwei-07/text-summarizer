@@ -64,7 +64,7 @@ st.write("## Enter your text below:")
 input_text = st.text_area(
     "Write your paragraph here:",
     value=st.session_state["input_text"],
-    height=200
+    height=200,
     on_change=lambda: st.session_state.update({"input_text": st.session_state.input_text})
 )
 
