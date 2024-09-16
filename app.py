@@ -63,7 +63,8 @@ input_text = st.text_area(
 
 # Clear button functionality
 if st.button("Clear"):
-    input_text = " "  # Reset input text
+    st.session_state["input_text"] = ""  # Reset session state
+    st.experimental_rerun()  # Refresh the app
 
 # Output
 if st.button("Summarize"):
