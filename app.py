@@ -65,11 +65,8 @@ input_text = st.text_area(
     "Write your paragraph here:",
     value=st.session_state["input_text"],
     height=200,
-    on_change=lambda: st.session_state.update({"input_text": st.session_state.input_text})
+    key="input_text",    # Use key to trigger session state update
 )
-
-# Update session state when text area input changes
-st.session_state["input_text"] = input_text
 
 # Calculate word count of input text
 word_count = len(st.session_state["input_text"].split())
