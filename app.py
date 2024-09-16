@@ -34,7 +34,7 @@ def is_chinese(text):
     return bool(re.search('[\u4e00-\u9fff]', text))
 
 # Word count function for Chinese and other languages
-def count_words(text, language):
+def count_words(text):
     if is_chinese(text):  # If the text contains Chinese character
         words = jieba.lcut(text)
     else:                 # Default to splitting by spaces for non-Chinese languages
