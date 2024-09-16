@@ -53,17 +53,26 @@ if summary_type == "Paragraph":
         ("Short", "Long")
     )
 
+# Initialize session state for input text
+if "input_text" not in st.session_state:
+    st.session_state["input_text"] = ""
+
 # Main area for text input
 st.write("## Enter your text below:")
 
-# Display text area
+# Display text area with session state to track changes
 input_text = st.text_area(
     "Write your paragraph here:",
+    value=st.session_state["input_text"],
     height=200
+    on_change=lambda: st.session_state.update({"input_text": st.session_state.input_text})
 )
 
+# Update session state when text area input changes
+st.session_state["input_text"] = input_text
+
 # Calculate word count of input text
-word_count = len(input_text.split())
+word_count = len(st.session_state["input_text"].split())
 
 # Display word count information
 st.write(f"Word count: {word_count}/800 words")
