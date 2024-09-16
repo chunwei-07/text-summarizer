@@ -90,9 +90,8 @@ if st.button("Summarize"):
     if word_count > 800:
         st.warning("Your input exceeds the 800-word limit. Please shorten your text.")
     elif input_text:
-        for language in languages:
-            st.write(f"### Summary in {language}:")
-            summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
-            st.write(summary)
+        st.write(f"### Summary in {input_language}:")
+        summary = summarize_text(input_text, input_language, summary_type, length if summary_type == "Paragraph" else None)
+        st.write(summary)
     else:
         st.warning("Please enter some text to summarize.")
