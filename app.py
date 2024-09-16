@@ -39,15 +39,11 @@ def count_words(text, language):
 st.title("Multilingual Text Summarizer")
 
 # Sidebar for language selection
-st.sidebar.header("Settings")
-languages = st.sidebar.multiselect(
-    "Choose the language(s) for summarization",
+input_language = st.sidebar.selectbox(
+    "Select the input language",
     options=["English", "Malay", "Chinese"],
-    default=["English"]
+    index=0  # Default to English
 )
-
-if not languages:
-    st.sidebar.warning("Please select at least one language.")
 
 # Summarization type (bullet points or paragraph)
 summary_type = st.sidebar.radio(
@@ -78,12 +74,7 @@ input_text = st.text_area(
 )
 
 # Calculate word count for selected languages
-if languages:
-  primary_language = languages[0]  # Assume first selected language for word count
-else:
-  primary_language = "English"
-
-word_count = count_words(st.session_state["input_text"], primary_language)
+word_count = count_words(st.session_state["input_text"], input_language)
 
 # Display word count information
 st.write(f"Word count: {word_count}/800 words")
