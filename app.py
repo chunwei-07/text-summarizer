@@ -5,8 +5,8 @@ import openai
 openai.api_key = st.secrets["mykey"]
 
 # Summarization Function
-def summarize_text(input_text, language, summary_type, length="short"):
-    if summary_type == "bullet points":
+def summarize_text(input_text, language, summary_type, length="Short"):
+    if summary_type == "Bullet points":
         prompt = f"Summarize this paragraph in {language} in bullet points: {input_text}"
     else:
         prompt = f"Summarize this paragraph in {language} as a {length} paragraph: {input_text}"
