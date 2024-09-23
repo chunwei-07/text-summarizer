@@ -46,10 +46,10 @@ st.title("Multilingual Text Summarizer")
 
 # Sidebar for language selection
 st.sidebar.header("Settings")
-input_language = st.sidebar.selectbox(
+input_languages = st.sidebar.multiselect(
     "Select the input language",
     options=["English", "Malay", "Chinese"],
-    index=0  # Default to English
+    default=["English"] # Default to English
 )
 
 # Summarization type (bullet points or paragraph)
@@ -91,8 +91,9 @@ if st.button("Summarize"):
     if word_count > 800:
         st.warning("Your input exceeds the 800-word limit. Please shorten your text.")
     elif input_text:
-        st.write(f"### Summary in {input_language}:")
-        summary = summarize_text(input_text, input_language, summary_type, length if summary_type == "Paragraph" else None)
-        st.write(summary)
+        for language in input_languages:
+            st.write(f"### Summary in {input_language}:")
+            summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+            st.write(summary)
     else:
         st.warning("Please enter some text to summarize.")
