@@ -52,7 +52,7 @@ def generate_pdf(summary):
     
     # Save the PDF to a BytesIO stream
     pdf_output = BytesIO()
-    pdf.output(pdf_output, 'F')  # 'F' to write to file-like object (BytesIO)
+    pdf.output(pdf_output)  # No need for 'F' here, write directly to the BytesIO object
     pdf_output.seek(0)  # Move the cursor to the start of the stream
     return pdf_output
 
