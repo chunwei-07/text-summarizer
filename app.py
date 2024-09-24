@@ -116,7 +116,7 @@ if st.button("Summarize"):
             st.write(summary)
 
             # Provide a button to download the summary as a text file
-            text_output = StringIO()
+            text_output = BytesIO()
             text_output.write(summary)
             text_output.seek(0)
             st.download_button(
