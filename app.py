@@ -43,16 +43,22 @@ def count_words(text):
         words = text.split()
     return len(words)
 
-# Function to generate a PDF file from the summary
+# Function to generate a PDF file from the summary (supports Chinese)
 def generate_pdf(summary):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+
+    # Add a font that supports Chinese characters (e.g., SimSun or Noto Sans CJK)
+    # You can download and use a font like "SimSun" (SimSun.ttf) or "Noto Sans CJK"
+    pdf.add_font("SimSun", "", "fonts/SimSun.ttf", uni=True)  # Add the TTF font file
+    pdf.set_font("SimSun", size=12)  # Use the font with Chinese support
+
+    # Write the summary to the PDF
     pdf.multi_cell(200, 10, txt=summary, align='L')
-    
-    # Save the PDF to a string and then write it to a BytesIO stream
+
+    # Save the PDF to a BytesIO stream
     pdf_output = BytesIO()
-    pdf_content = pdf.output(dest='S').encode('latin1')  # Get PDF content as a string and encode it
+    pdf_content = pdf.output(dest='S').encode('latin1')  # Use appropriate encoding
     pdf_output.write(pdf_content)
     pdf_output.seek(0)  # Move the cursor to the start of the stream
     return pdf_output
