@@ -3,6 +3,8 @@ import streamlit as st
 import openai
 import jieba   # For Chinese word segmentation
 import re
+from io import StringIO
+from fpdf import FPDF
 
 openai.api_key = st.secrets["mykey"]
 
@@ -35,11 +37,22 @@ def is_chinese(text):
 
 # Word count function for Chinese and other languages
 def count_words(text):
-    if is_chinese(text):  # If the text contains Chinese character
+    if is_chinese(text):  # If the text contains Chinese characters
         words = jieba.lcut(text)
     else:                 # Default to splitting by spaces for non-Chinese languages
         words = text.split()
     return len(words)
+
+# Function to generate a PDF file from the summary
+def generate_pdf(summary):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(200, 10, txt=summary, align='L')
+    # Save the PDF to a byte stream
+    pdf_output = StringIO()
+    pdf.output(pdf_output)
+    return pdf_output
 
 # Streamlit UI
 st.title("Multilingual Text Summarizer")
@@ -49,7 +62,7 @@ st.sidebar.header("Settings")
 input_languages = st.sidebar.multiselect(
     "Select the input language",
     options=["English", "Malay", "Chinese"],
-    default=["English"] # Default to English
+    default=["English"]  # Default to English
 )
 
 # Summarization type (bullet points or paragraph)
@@ -93,7 +106,31 @@ if st.button("Summarize"):
     elif input_text:
         for language in input_languages:
             st.write(f"### Summary in {language}:")
-            summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+
+            # Add loading spinner during summarization
+            with st.spinner("Generating summary..."):
+                summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+
             st.write(summary)
+
+            # Provide a button to download the summary as a text file
+            text_output = StringIO()
+            text_output.write(summary)
+            text_output.seek(0)
+            st.download_button(
+                label="Download Summary as Text File",
+                data=text_output,
+                file_name=f"summary_{language}.txt",
+                mime="text/plain"
+            )
+
+            # Provide a button to download the summary as a PDF file
+            pdf_output = generate_pdf(summary)
+            st.download_button(
+                label="Download Summary as PDF",
+                data=pdf_output.getvalue(),
+                file_name=f"summary_{language}.pdf",
+                mime="application/pdf"
+            )
     else:
         st.warning("Please enter some text to summarize.")
