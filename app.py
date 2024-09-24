@@ -3,7 +3,7 @@ import streamlit as st
 import openai
 import jieba   # For Chinese word segmentation
 import re
-from io import StringIO
+from io import BytesIO
 from fpdf import FPDF
 
 openai.api_key = st.secrets["mykey"]
@@ -49,9 +49,11 @@ def generate_pdf(summary):
     pdf.add_page()
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(200, 10, txt=summary, align='L')
-    # Save the PDF to a byte stream
-    pdf_output = StringIO()
+    
+    # Save the PDF to a BytesIO stream
+    pdf_output = BytesIO()
     pdf.output(pdf_output)
+    pdf_output.seek(0)  # Move the cursor to the start of the stream
     return pdf_output
 
 # Streamlit UI
