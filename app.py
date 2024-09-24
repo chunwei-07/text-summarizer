@@ -50,9 +50,10 @@ def generate_pdf(summary):
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(200, 10, txt=summary, align='L')
     
-    # Save the PDF to a BytesIO stream
+    # Save the PDF to a string and then write it to a BytesIO stream
     pdf_output = BytesIO()
-    pdf.output(pdf_output)  # No need for 'F' here, write directly to the BytesIO object
+    pdf_content = pdf.output(dest='S').encode('latin1')  # Get PDF content as a string and encode it
+    pdf_output.write(pdf_content)
     pdf_output.seek(0)  # Move the cursor to the start of the stream
     return pdf_output
 
