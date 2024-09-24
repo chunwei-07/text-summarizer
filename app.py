@@ -3,7 +3,7 @@ import streamlit as st
 import openai
 import jieba   # For Chinese word segmentation
 import re
-from io import BytesIO
+from io import BytesIO, StringIO
 from fpdf import FPDF
 
 openai.api_key = st.secrets["mykey"]
@@ -115,8 +115,8 @@ if st.button("Summarize"):
 
             st.write(summary)
 
-            # Provide a button to download the summary as a text file
-            text_output = BytesIO()
+            # Provide a button to download the summary as a text file (using StringIO for text data)
+            text_output = StringIO()
             text_output.write(summary)
             text_output.seek(0)
             st.download_button(
