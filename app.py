@@ -69,7 +69,7 @@ st.title("Multilingual Text Summarizer")
 # Sidebar for language selection
 st.sidebar.header("Settings")
 input_languages = st.sidebar.multiselect(
-    "Select the input language",
+    "Select the summarized language",
     options=["English", "Malay", "Chinese"],
     default=["English"]  # Default to English
 )
