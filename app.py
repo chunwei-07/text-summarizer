@@ -195,6 +195,21 @@ if option == "Summarize PDF" or option == "Summarize":
                     with st.spinner("Generating summary..."):
                         summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
                     st.write(summary)
+
+                    # Provide download buttons for text and PDF
+                    st.download_button(
+                        label="Download Summary as Text File",
+                        data=summary,
+                        file_name=f"summary_{language}.txt",
+                        mime="text/plain"
+                    )
+                    pdf_output = generate_pdf(summary)
+                    st.download_button(
+                        label="Download Summary as PDF",
+                        data=pdf_output.getvalue(),
+                        file_name=f"summary_{language}.pdf",
+                        mime="application/pdf"
+                    )
 else:
     if st.button("Answer Question"):
         if question:
