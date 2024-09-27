@@ -120,7 +120,8 @@ pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
 
 # Main area for text input or PDF handling
 if pdf_file:
-    extracted_text = extract_text_from_pdf(pdf_file)
+    extracted_text = extract_text_from_pdf(pdf_file)  # Extracted text from PDF
+    pdf_content = extracted_text  # Store extracted content in pdf_content
 
     # Allow user to select summarization or Q&A
     option = st.radio("What would you like to do?", ("Summarize PDF", "Q&A on PDF"))
@@ -150,7 +151,7 @@ else:
     )
 
 # Calculate word count and limit to 1500 words
-word_count = count_words(input_text)
+word_count = count_words(input_text if not pdf_file else pdf_content)
 st.write(f"Word count: {word_count}/1500 words")
 
 if word_count > 1500:
@@ -180,6 +181,7 @@ else:
                 )
         elif pdf_file and option == "Q&A on PDF":
             if question:
+                # Pass the extracted PDF content to ask_question
                 answer = ask_question(pdf_content, question)
                 st.write(f"### Answer: {answer}")
         elif input_text:
