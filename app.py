@@ -194,4 +194,3 @@ else:
         if question:
             answer = ask_question(pdf_content, question)
             st.write(f"### Answer: {answer}")
-
