@@ -118,6 +118,9 @@ if summary_type == "Paragraph":
 # Upload PDF file
 pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
 
+# Initialize 'option' with a default value
+option = None
+
 # Main area for text input or PDF handling
 if pdf_file:
     extracted_text = extract_text_from_pdf(pdf_file)  # Extracted text from PDF
@@ -144,6 +147,9 @@ else:
     if "input_text" not in st.session_state:
         st.session_state["input_text"] = ""
 
+    # Set default 'option' to summarization for manual text input (no PDF case)
+    option = "Summarize"
+
     # Main area for manual text input
     st.write("## Enter your text below:")
     input_text = st.text_area(
@@ -157,7 +163,7 @@ else:
     st.write(f"Word count: {word_count}/1500 words")
 
 # Display appropriate button depending on the user's choice
-if option == "Summarize PDF" or not pdf_file:
+if option == "Summarize PDF" or option == "Summarize":
     if word_count > 1500:
         st.warning("Your input exceeds the 1500-word limit. Please reduce your word count.")
     else:
