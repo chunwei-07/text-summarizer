@@ -2,3 +2,4 @@ streamlit==1.38.0
 openai==0.28
 jieba==0.42.1
 fpdf==1.7.2
+PyPDF2==3.0.1
