@@ -134,6 +134,9 @@ if pdf_file:
             height=200,
             key="input_text_pdf"
         )
+        # Calculate word count and limit to 1500 words for summarization
+        word_count = count_words(input_text)
+        st.write(f"Word count: {word_count}/1500 words")
     else:
         question = st.text_input("Ask a question about the PDF:")
 else:
@@ -149,45 +152,46 @@ else:
         height=200,
         key="input_text"
     )
+    # Calculate word count and limit to 1500 words for manual text input
+    word_count = count_words(input_text)
+    st.write(f"Word count: {word_count}/1500 words")
 
-# Calculate word count and limit to 1500 words
-word_count = count_words(input_text if not pdf_file else pdf_content)
-st.write(f"Word count: {word_count}/1500 words")
+# Display appropriate button depending on the user's choice
+if option == "Summarize PDF" or not pdf_file:
+    if word_count > 1500:
+        st.warning("Your input exceeds the 1500-word limit. Please reduce your word count.")
+    else:
+        if st.button("Summarize"):
+            if pdf_file and option == "Summarize PDF":
+                for language in input_languages:
+                    st.write(f"### Summary in {language}:")
+                    with st.spinner("Generating summary..."):
+                        summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+                    st.write(summary)
 
-if word_count > 1500:
-    st.warning("Your input exceeds the 1500-word limit. Please reduce your word count.")
+                    # Provide download buttons for text and PDF
+                    st.download_button(
+                        label="Download Summary as Text File",
+                        data=summary,
+                        file_name=f"summary_{language}.txt",
+                        mime="text/plain"
+                    )
+                    pdf_output = generate_pdf(summary)
+                    st.download_button(
+                        label="Download Summary as PDF",
+                        data=pdf_output.getvalue(),
+                        file_name=f"summary_{language}.pdf",
+                        mime="application/pdf"
+                    )
+            elif input_text:
+                for language in input_languages:
+                    st.write(f"### Summary in {language}:")
+                    with st.spinner("Generating summary..."):
+                        summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+                    st.write(summary)
 else:
-    if st.button("Summarize"):
-        if pdf_file and option == "Summarize PDF":
-            for language in input_languages:
-                st.write(f"### Summary in {language}:")
-                with st.spinner("Generating summary..."):
-                    summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
-                st.write(summary)
-
-                # Provide download buttons for text and PDF
-                st.download_button(
-                    label="Download Summary as Text File",
-                    data=summary,
-                    file_name=f"summary_{language}.txt",
-                    mime="text/plain"
-                )
-                pdf_output = generate_pdf(summary)
-                st.download_button(
-                    label="Download Summary as PDF",
-                    data=pdf_output.getvalue(),
-                    file_name=f"summary_{language}.pdf",
-                    mime="application/pdf"
-                )
-        elif pdf_file and option == "Q&A on PDF":
-            if question:
-                # Pass the extracted PDF content to ask_question
-                answer = ask_question(pdf_content, question)
-                st.write(f"### Answer: {answer}")
-        elif input_text:
-            for language in input_languages:
-                st.write(f"### Summary in {language}:")
-                with st.spinner("Generating summary..."):
-                    summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
-                st.write(summary)
+    if st.button("Answer Question"):
+        if question:
+            answer = ask_question(pdf_content, question)
+            st.write(f"### Answer: {answer}")
 
