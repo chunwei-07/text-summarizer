@@ -4,6 +4,7 @@ import openai
 import jieba   # For Chinese word segmentation
 import re
 from io import BytesIO
+from PyPDF2 import PdfReader
 from fpdf import FPDF
 
 openai.api_key = st.secrets["mykey"]
@@ -63,15 +64,42 @@ def generate_pdf(summary):
     pdf_output.seek(0)  # Move the cursor to the start of the stream
     return pdf_output
 
+# Extract text from a PDF file
+def extract_text_from_pdf(pdf_file):
+    reader = PdfReader(pdf_file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
+
+# Function to handle PDF Q&A
+def ask_question(pdf_content, question):
+    prompt = f"Answer the following question based on the PDF content only. If the question is unrelated to the PDF, respond with 'I don't understand.': {question}.\n\nPDF content: {pdf_content}"
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that answers questions related to the provided text."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300,
+            temperature=0.7,
+        )
+        answer = response.choices[0].message['content'].strip()
+        return answer
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 # Streamlit UI
-st.title("Multilingual Text Summarizer")
+st.title("Multilingual Text Summarizer with PDF Support")
 
 # Sidebar for language selection
 st.sidebar.header("Settings")
 input_languages = st.sidebar.multiselect(
     "Select the summarized language",
     options=["English", "Malay", "Chinese"],
-    default=["English"]  # Default to English
+    default=["English"]
 )
 
 # Summarization type (bullet points or paragraph)
@@ -87,56 +115,77 @@ if summary_type == "Paragraph":
         ("Short", "Long")
     )
 
-# Initialize session state for input text
-if "input_text" not in st.session_state:
-    st.session_state["input_text"] = ""
+# Upload PDF file
+pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
 
-# Main area for text input
-st.write("## Enter your text below:")
+# Main area for text input or PDF handling
+if pdf_file:
+    extracted_text = extract_text_from_pdf(pdf_file)
 
-# Display text area with session state to track changes
-input_text = st.text_area(
-    "Write your paragraph here:",
-    value=st.session_state["input_text"],
-    height=200,
-    key="input_text",    # Use key to trigger session state update
-)
+    # Allow user to select summarization or Q&A
+    option = st.radio("What would you like to do?", ("Summarize PDF", "Q&A on PDF"))
 
-# Calculate word count for selected languages
-word_count = count_words(st.session_state["input_text"])
-
-# Display word count information
-st.write(f"Word count: {word_count}/800 words")
-
-# Output
-if st.button("Summarize"):
-    if word_count > 800:
-        st.warning("Your input exceeds the 800-word limit. Please shorten your text.")
-    elif input_text:
-        for language in input_languages:
-            st.write(f"### Summary in {language}:")
-
-            # Add loading spinner during summarization
-            with st.spinner("Generating summary..."):
-                summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
-
-            st.write(summary)
-
-            # Provide a button to download the summary as a text file (direct text data)
-            st.download_button(
-                label="Download Summary as Text File",
-                data=summary,  # Directly pass the string content
-                file_name=f"summary_{language}.txt",
-                mime="text/plain"
-            )
-
-            # Provide a button to download the summary as a PDF file
-            pdf_output = generate_pdf(summary)
-            st.download_button(
-                label="Download Summary as PDF",
-                data=pdf_output.getvalue(),
-                file_name=f"summary_{language}.pdf",
-                mime="application/pdf"
-            )
+    if option == "Summarize PDF":
+        st.write("### Extracted Text from PDF:")
+        input_text = st.text_area(
+            "You can review or edit the extracted text before summarizing:",
+            value=extracted_text,
+            height=200,
+            key="input_text_pdf"
+        )
     else:
-        st.warning("Please enter some text to summarize.")
+        question = st.text_input("Ask a question about the PDF:")
+else:
+    # Initialize session state for input text
+    if "input_text" not in st.session_state:
+        st.session_state["input_text"] = ""
+
+    # Main area for manual text input
+    st.write("## Enter your text below:")
+    input_text = st.text_area(
+        "Write your paragraph here:",
+        value=st.session_state["input_text"],
+        height=200,
+        key="input_text"
+    )
+
+# Calculate word count and limit to 1500 words
+word_count = count_words(input_text)
+st.write(f"Word count: {word_count}/1500 words")
+
+if word_count > 1500:
+    st.warning("Your input exceeds the 1500-word limit. Please reduce your word count.")
+else:
+    if st.button("Summarize"):
+        if pdf_file and option == "Summarize PDF":
+            for language in input_languages:
+                st.write(f"### Summary in {language}:")
+                with st.spinner("Generating summary..."):
+                    summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+                st.write(summary)
+
+                # Provide download buttons for text and PDF
+                st.download_button(
+                    label="Download Summary as Text File",
+                    data=summary,
+                    file_name=f"summary_{language}.txt",
+                    mime="text/plain"
+                )
+                pdf_output = generate_pdf(summary)
+                st.download_button(
+                    label="Download Summary as PDF",
+                    data=pdf_output.getvalue(),
+                    file_name=f"summary_{language}.pdf",
+                    mime="application/pdf"
+                )
+        elif pdf_file and option == "Q&A on PDF":
+            if question:
+                answer = ask_question(pdf_content, question)
+                st.write(f"### Answer: {answer}")
+        elif input_text:
+            for language in input_languages:
+                st.write(f"### Summary in {language}:")
+                with st.spinner("Generating summary..."):
+                    summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
+                st.write(summary)
+
