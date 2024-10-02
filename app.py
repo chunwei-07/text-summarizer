@@ -74,10 +74,10 @@ def extract_text_from_pdf(pdf_file):
 
 # Function to handle PDF Q&A
 def ask_question(pdf_content, question):
-    prompt = f"You are a helpful assistant that are expert in multiple languages. Answer the following question based on the PDF content only.
+    prompt = f"""You are a helpful assistant that are expert in multiple languages. Answer the following question based on the PDF content only.
     The languages you are expert in include English, Chinese, and Malay.
     If the question is asked in English, answer in English. If it is in Chinese, answer in Chinese, same to Malay.
-    If the question is unrelated to the PDF, respond with 'There is no related information found in the PDF file.': {question}.\n\nPDF content: {pdf_content}"
+    If the question is unrelated to the PDF, respond with 'There is no related information found in the PDF file.': {question}.\n\nPDF content: {pdf_content}"""
 
     try:
         response = openai.ChatCompletion.create(
