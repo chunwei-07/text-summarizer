@@ -74,7 +74,7 @@ def extract_text_from_pdf(pdf_file):
 
 # Function to handle PDF Q&A
 def ask_question(pdf_content, question):
-    prompt = f"Answer the following question based on the PDF content only. If the question is unrelated to the PDF, respond with 'I don't understand.': {question}.\n\nPDF content: {pdf_content}"
+    prompt = f"Answer the following question based on the PDF content only. If the question is unrelated to the PDF, respond with 'There is no related information found in the PDF file.': {question}.\n\nPDF content: {pdf_content}"
 
     try:
         response = openai.ChatCompletion.create(
