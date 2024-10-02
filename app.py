@@ -95,7 +95,7 @@ def ask_question(pdf_content, question):
 st.title("Multilingual Text Summarizer with PDF Support")
 
 # Sidebar for language selection
-st.sidebar.header("Settings")
+st.sidebar.header("Summarisation Settings")
 input_languages = st.sidebar.multiselect(
     "Select the summarized language",
     options=["English", "Malay", "Chinese"],
