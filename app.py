@@ -76,10 +76,10 @@ def extract_text_from_pdf(pdf_file):
 def ask_question(pdf_content, question):
     # Construct the prompt to make sure the model knows to respond in the language of the question
     prompt = (
-        f"Answer the following question in the same language it is asked, based on the PDF content only. "
-        f"If the question is unrelated to the PDF, respond with 'Information not found from PDF file' in the same language it is asked:\n\n"
-        f"Question: {question}\n\n"
-        f"PDF content: {pdf_content}"
+    f"Answer the following question based on the PDF content only, in the same language it is asked. "
+    f"If the answer cannot be found in the PDF, respond with 'Information not found from PDF file' in the same language it is asked:\n\n"
+    f"Question: {question}\n\n"
+    f"PDF content: {pdf_content}"
     )
 
     try:
