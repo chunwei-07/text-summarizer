@@ -74,7 +74,13 @@ def extract_text_from_pdf(pdf_file):
 
 # Function to handle PDF Q&A
 def ask_question(pdf_content, question):
-    prompt = f"Answer the following question based on the PDF content only. If the question is unrelated to the PDF, respond with 'I don't understand.': {question}.\n\nPDF content: {pdf_content}"
+    # Construct the prompt to make sure the model knows to respond in the language of the question
+    prompt = (
+        f"Answer the following question in the same language it is asked, based on the PDF content only. "
+        f"If the question is unrelated to the PDF, respond with 'I don't understand.':\n\n"
+        f"Question: {question}\n\n"
+        f"PDF content: {pdf_content}"
+    )
 
     try:
         response = openai.ChatCompletion.create(
@@ -90,6 +96,7 @@ def ask_question(pdf_content, question):
         return answer
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 # Streamlit UI
 st.title("Multilingual Text Summarizer with PDF Support")
