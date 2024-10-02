@@ -122,7 +122,7 @@ if summary_type == "Paragraph":
         ("Short", "Long")
     )
 
-st.sidebar.info("**Note:** The settings below are only for summarization and do not apply to PDF Q&A.")
+st.sidebar.info("**Note:** The settings above are only for summarization and do not apply to PDF Q&A.")
 
 # Upload PDF file
 pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
