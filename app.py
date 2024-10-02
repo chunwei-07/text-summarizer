@@ -77,7 +77,7 @@ def ask_question(pdf_content, question):
     # Construct the prompt to make sure the model knows to respond in the language of the question
     prompt = (
         f"Answer the following question in the same language it is asked, based on the PDF content only. "
-        f"If the question is unrelated to the PDF, respond with 'I don't understand.':\n\n"
+        f"If the question is unrelated to the PDF, respond with 'Information not found from PDF file' in the same language it is asked:\n\n"
         f"Question: {question}\n\n"
         f"PDF content: {pdf_content}"
     )
@@ -148,7 +148,7 @@ if pdf_file:
         word_count = count_words(input_text)
         st.write(f"Word count: {word_count}/1500 words")
     else:
-        question = st.text_input("Ask a question about the PDF:")
+        question = st.text_input("Ask a question about the PDF (Auto-detection of language):")
 else:
     # Initialize session state for input text
     if "input_text" not in st.session_state:
