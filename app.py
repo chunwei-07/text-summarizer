@@ -103,6 +103,8 @@ st.title("Multilingual Text Summarizer with PDF Support")
 
 # Sidebar for language selection
 st.sidebar.header("Summarization Settings")
+st.sidebar.info("**Note:** The settings below are only for summarization and do not apply to PDF Q&A.")
+
 input_languages = st.sidebar.multiselect(
     "Select the summarized language",
     options=["English", "Malay", "Chinese"],
