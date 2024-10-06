@@ -9,25 +9,26 @@ from fpdf import FPDF
 
 openai.api_key = st.secrets["mykey"]
 
-# Summarization Function
-def summarize_text(input_text, language, summary_type, length="Short"):
-    if summary_type == "Bullet points":
-        prompt = f"Summarize this paragraph in {language} in bullet points: {input_text}"
-    else:
-        prompt = f"Summarize this paragraph in {language} as a {length} paragraph: {input_text}"
+# Function to generate questions and answers based on input text
+def generate_questions_and_answers(input_text, language):
+    prompt = (
+        f"Analyze the input text below and generate 5 essential questions that capture the main points. "
+        f"Then, answer each question in detail in {language}:\n\n"
+        f"Text: {input_text}"
+    )
 
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that summarizes text."},
+                {"role": "system", "content": "You are a helpful assistant that generates questions and answers based on the input text."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=150 if length == "Short" else 300,
+            max_tokens=1000,  # Adjusted token count to accommodate longer answers
             temperature=0.7,
         )
-        summary = response.choices[0].message['content'].strip()
-        return summary
+        q_and_a = response.choices[0].message['content'].strip()
+        return q_and_a
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -122,7 +123,7 @@ if summary_type == "Paragraph":
         ("Short", "Long")
     )
 
-st.sidebar.info("**Note:** The settings above are only for summarization and do not apply to PDF Q&A.")
+st.sidebar.info("**Note:** The settings above are only for Q&A generation and summarization will follow the structured question-answering approach.")
 
 # Upload PDF file
 pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
@@ -176,47 +177,47 @@ if option == "Summarize PDF" or option == "Summarize":
     if word_count > 1500:
         st.warning("Your input exceeds the 1500-word limit. Please reduce your word count.")
     else:
-        if st.button("Summarize"):
+        if st.button("Generate Questions & Answers"):
             if pdf_file and option == "Summarize PDF":
                 for language in input_languages:
-                    st.write(f"### Summary in {language}:")
-                    with st.spinner("Generating summary..."):
-                        summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
-                    st.write(summary)
+                    st.write(f"### Questions and Answers in {language}:")
+                    with st.spinner("Generating Q&A..."):
+                        q_and_a = generate_questions_and_answers(input_text, language)
+                    st.write(q_and_a)
 
                     # Provide download buttons for text and PDF
                     st.download_button(
-                        label="Download Summary as Text File",
-                        data=summary,
-                        file_name=f"summary_{language}.txt",
+                        label="Download Q&A as Text File",
+                        data=q_and_a,
+                        file_name=f"Q&A_{language}.txt",
                         mime="text/plain"
                     )
-                    pdf_output = generate_pdf(summary)
+                    pdf_output = generate_pdf(q_and_a)
                     st.download_button(
-                        label="Download Summary as PDF",
+                        label="Download Q&A as PDF",
                         data=pdf_output.getvalue(),
-                        file_name=f"summary_{language}.pdf",
+                        file_name=f"Q&A_{language}.pdf",
                         mime="application/pdf"
                     )
             elif input_text:
                 for language in input_languages:
-                    st.write(f"### Summary in {language}:")
-                    with st.spinner("Generating summary..."):
-                        summary = summarize_text(input_text, language, summary_type, length if summary_type == "Paragraph" else None)
-                    st.write(summary)
+                    st.write(f"### Questions and Answers in {language}:")
+                    with st.spinner("Generating Q&A..."):
+                        q_and_a = generate_questions_and_answers(input_text, language)
+                    st.write(q_and_a)
 
                     # Provide download buttons for text and PDF
                     st.download_button(
-                        label="Download Summary as Text File",
-                        data=summary,
-                        file_name=f"summary_{language}.txt",
+                        label="Download Q&A as Text File",
+                        data=q_and_a,
+                        file_name=f"Q&A_{language}.txt",
                         mime="text/plain"
                     )
-                    pdf_output = generate_pdf(summary)
+                    pdf_output = generate_pdf(q_and_a)
                     st.download_button(
-                        label="Download Summary as PDF",
+                        label="Download Q&A as PDF",
                         data=pdf_output.getvalue(),
-                        file_name=f"summary_{language}.pdf",
+                        file_name=f"Q&A_{language}.pdf",
                         mime="application/pdf"
                     )
 else:
