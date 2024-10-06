@@ -180,7 +180,7 @@ if option == "Summarize PDF" or option == "Summarize":
         if st.button("Summarize"):
             if pdf_file and option == "Summarize PDF":
                 for language in input_languages:
-                    st.write(f"### Questions and Answers in {language}:")
+                    st.write(f"### Summarization in {language}:")
                     with st.spinner("Generating Q&A..."):
                         q_and_a = generate_questions_and_answers(input_text, language)
                     st.write(q_and_a)
