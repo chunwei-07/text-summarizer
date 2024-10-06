@@ -123,7 +123,7 @@ if summary_type == "Paragraph":
         ("Short", "Long")
     )
 
-st.sidebar.info("**Note:** The settings above are only for Q&A generation and summarization will follow the structured question-answering approach.")
+st.sidebar.info("**Note:** The settings above are only for summarization function and does not apply on PDF Q&A.")
 
 # Upload PDF file
 pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
@@ -177,7 +177,7 @@ if option == "Summarize PDF" or option == "Summarize":
     if word_count > 1500:
         st.warning("Your input exceeds the 1500-word limit. Please reduce your word count.")
     else:
-        if st.button("Generate Questions & Answers"):
+        if st.button("Summarize"):
             if pdf_file and option == "Summarize PDF":
                 for language in input_languages:
                     st.write(f"### Questions and Answers in {language}:")
@@ -187,14 +187,14 @@ if option == "Summarize PDF" or option == "Summarize":
 
                     # Provide download buttons for text and PDF
                     st.download_button(
-                        label="Download Q&A as Text File",
+                        label="Download Summary as Text File",
                         data=q_and_a,
                         file_name=f"Q&A_{language}.txt",
                         mime="text/plain"
                     )
                     pdf_output = generate_pdf(q_and_a)
                     st.download_button(
-                        label="Download Q&A as PDF",
+                        label="Download Summary as PDF",
                         data=pdf_output.getvalue(),
                         file_name=f"Q&A_{language}.pdf",
                         mime="application/pdf"
@@ -208,14 +208,14 @@ if option == "Summarize PDF" or option == "Summarize":
 
                     # Provide download buttons for text and PDF
                     st.download_button(
-                        label="Download Q&A as Text File",
+                        label="Download Summary as Text File",
                         data=q_and_a,
                         file_name=f"Q&A_{language}.txt",
                         mime="text/plain"
                     )
                     pdf_output = generate_pdf(q_and_a)
                     st.download_button(
-                        label="Download Q&A as PDF",
+                        label="Download Summary as PDF",
                         data=pdf_output.getvalue(),
                         file_name=f"Q&A_{language}.pdf",
                         mime="application/pdf"
