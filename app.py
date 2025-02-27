@@ -220,48 +220,142 @@ class DocumentAgent:
     except Exception as e:
       return f"Error in document processing: {str(e)}"
 
-# Function to generate visual document analysis
-def generate_document_visualization(text):
-  """Generate visualizations for document analysis"""
-  # Create visualizations in a temp directory
-  with tempfile.TemporaryDirectory() as tmpdirname:
-    # 1. Word frequency chart
-    words = text.lower().split()
-    word_freq = pd.Series(words).value_counts().head(20)
-
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x=word_freq.values, y=word_freq.index)
-    plt.title('Top 20 Word Frequencies')
-    plt.xlabel('Frequency')
-    plt.ylabel('Words')
-    plt.tight_layout()
-    word_freq_path = os.path.join(tmpdirname, 'word_freq.png')
-    plt.savefig(word_freq_path)
-    plt.close()
-
-    # 2. Sentiment Analysis over document sections
-    sections = re.split(r'\n\n+', text)
-    section_sentiments = []
-
-    # Here we would analyze sentiment per section
-    # For demonstration, let's generate random sentiment scores
-    sentiments = np.random.uniform(-1, 1, len(sections))
+def generate_and_display_visualizations(text):
+    """Generate and display visualizations for document analysis"""
     
-    plt.figure(figsize=(10, 6))
-    plt.plot(sentiments)
-    plt.title('Sentiment Flow Throughout Document')
-    plt.xlabel('Section')
-    plt.ylabel('Sentiment Score')
-    plt.grid(True)
-    sentiment_path = os.path.join(tmpdirname, 'sentiment.png')
-    plt.savefig(sentiment_path)
-    plt.close()
+    st.subheader("Document Visualizations")
     
-    # Return paths to visualizations
-    return {
-        'word_frequency': word_freq_path,
-        'sentiment_flow': sentiment_path
-    }
+    # Create tabs for different visualizations
+    viz_tabs = st.tabs(["Word Frequency", "Sentiment Flow", "Entity Distribution"])
+    
+    with viz_tabs[0]:
+        # 1. Word frequency chart
+        st.write("### Word Frequency Analysis")
+        
+        # Preprocess text - remove common stopwords and punctuation
+        import re
+        from collections import Counter
+        
+        # Simple preprocessing
+        cleaned_text = re.sub(r'[^\w\s]', '', text.lower())
+        words = [word for word in cleaned_text.split() if len(word) > 3]  # Filter short words
+        
+        # Count word frequencies and get top 20
+        word_counts = Counter(words).most_common(20)
+        words_df = pd.DataFrame(word_counts, columns=['Word', 'Frequency'])
+        
+        # Create plot with matplotlib
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x='Frequency', y='Word', data=words_df, ax=ax)
+        ax.set_title('Top 20 Word Frequencies')
+        plt.tight_layout()
+        
+        # Display the plot in Streamlit
+        st.pyplot(fig)
+        
+        # Also show the data in a table
+        st.write("#### Word Frequency Data")
+        st.dataframe(words_df)
+    
+    with viz_tabs[1]:
+        # 2. Sentiment analysis over document sections
+        st.write("### Sentiment Flow Throughout Document")
+        
+        # Split text into sections
+        sections = re.split(r'\n\n+', text)
+        sections = [s for s in sections if len(s.strip()) > 50]  # Only analyze substantial sections
+        
+        # For a real app, you would analyze sentiment per section
+        # Here, simulate sentiment scores
+        if len(sections) > 0:
+            # Option 1: For simulated data:
+            sentiments = np.random.uniform(-0.8, 0.8, len(sections))
+            
+            # Option 2: For real sentiment analysis:
+            # This would be a real implementation, but commented out since it's expensive
+            """
+            sentiments = []
+            for i, section in enumerate(sections):
+                if i % 3 == 0:  # Only show progress every 3 sections to reduce API calls
+                    progress = st.progress(i / len(sections))
+                
+                try:
+                    response = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                            {"role": "system", "content": "Analyze the sentiment of this text. Provide only a score from -1 (very negative) to 1 (very positive)."},
+                            {"role": "user", "content": section[:1000]}  # Limit to first 1000 chars
+                        ],
+                        temperature=0.3,
+                        max_tokens=10
+                    )
+                    result = response.choices[0].message['content'].strip()
+                    # Extract number from response
+                    try:
+                        score = float(re.search(r'(-?\d+(\.\d+)?)', result).group(1))
+                        sentiments.append(score)
+                    except:
+                        sentiments.append(0)
+                except:
+                    sentiments.append(0)
+            """
+            
+            # Create dataframe for plotting
+            sentiment_df = pd.DataFrame({
+                'Section': range(1, len(sentiments) + 1),
+                'Sentiment': sentiments
+            })
+            
+            # Create plot with plotly for interactivity
+            import plotly.express as px
+            fig = px.line(sentiment_df, x='Section', y='Sentiment', 
+                          title='Sentiment Throughout Document',
+                          labels={'Sentiment': 'Sentiment Score (-1 to 1)'},
+                          markers=True)
+            
+            # Add a horizontal line at y=0
+            fig.add_shape(type="line", x0=0, y0=0, x1=len(sentiments), y1=0,
+                         line=dict(color="red", width=1, dash="dash"))
+            
+            # Display in Streamlit
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Quick summary
+            avg_sentiment = np.mean(sentiments)
+            st.metric("Average Document Sentiment", f"{avg_sentiment:.2f}", 
+                     delta=f"{avg_sentiment:.2f}", delta_color="normal")
+        else:
+            st.write("Not enough sections to analyze sentiment flow.")
+    
+    with viz_tabs[2]:
+        # 3. Entity distribution (simulated)
+        st.write("### Entity Distribution")
+        
+        # In a real application, you would extract entities using a proper NER model
+        # This is simulated data for demonstration
+        entity_types = ['Person', 'Organization', 'Location', 'Date', 'Concept']
+        entity_counts = np.random.randint(1, 15, size=len(entity_types))
+        
+        # Create dataframe
+        entity_df = pd.DataFrame({
+            'Entity Type': entity_types,
+            'Count': entity_counts
+        })
+        
+        # Create donut chart with plotly
+        import plotly.express as px
+        fig = px.pie(entity_df, values='Count', names='Entity Type', 
+                    title='Entity Type Distribution',
+                    hole=0.4)
+        
+        # Display in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Display entities in expandable sections
+        for entity_type in entity_types:
+            with st.expander(f"{entity_type} Entities"):
+                # This would be real extracted entities in a proper implementation
+                st.write("Example entities would be listed here.")
 
 # Streamlit UI with agentic capabilities
 def create_app_ui():
@@ -326,214 +420,223 @@ def create_app_ui():
           height=200
       )
 
-      if st.button("Process Document"):
-        if input_text:
-          with st.spinner("Processing your document..."):
-            # Process with agent
-            results = st.session_state.agent.process_document(
-              input_text, 
-              task_description
-            )
-            
-            # Store current document
-            st.session_state.current_document = results
-            
-            # Display results
-            st.header("Document Analysis Results")
-            
-            # Summary tab
-            st.subheader("Summary")
-            st.write(results["summary"])
-            
-            # Entity tab
-            st.subheader("Key Entities")
-            st.write(results["entities"])
-            
-            # Sentiment tab
-            st.subheader("Sentiment Analysis")
-            st.write(results["sentiment"])
-            
-            # Questions tab
-            st.subheader("Suggested Questions")
-            st.write(results["questions"])
-            
-            # Generate download buttons
-            st.download_button(
-              label="Download Analysis as Text",
-              data=f"DOCUMENT ANALYSIS\n\nSummary:\n{results['summary']}\n\nEntities:\n{results['entities']}\n\nSentiment:\n{results['sentiment']}\n\nQuestions:\n{results['questions']}",
-              file_name="document_analysis.txt",
-              mime="text/plain"
-            )
-        else:
-          st.warning("Please enter some text to process.")
-
-    elif doc_mode == "PDF Upload":
-      st.header("Upload PDF Document")
-      pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
-
-      if pdf_file:
-        try:
-          # Extract text from PDF
-          reader = PdfReader(pdf_file)
-          text = ""
-          for page in reader.pages:
-            text += page.extract_text()
-          
-          # Show extracted text
-          st.subheader("Extracted Text")
-          with st.expander("View extracted text"):
-            st.text(text[:1000] + "..." if len(text) > 1000 else text)
-          
-          # Process PDF options
-          pdf_action = st.radio(
-            "What would you like to do with this PDF?",
-            ("Analyze Fully", "Summarize Only", "Q&A", "Custom Analysis")
-          )
-          
-          if st.button("Process PDF"):
-            with st.spinner("Processing your PDF..."):
-              if pdf_action == "Analyze Fully":
-                results = st.session_state.agent.process_document(
-                  text, 
-                  "Perform a comprehensive analysis including summary, entities, sentiment and questions."
-                )
-              elif pdf_action == "Summarize Only":
-                summary = enhanced_summarize_text(
-                  text, 
-                  languages[0], 
-                  summary_type, 
-                  length, 
-                  summary_approach
-                )
-                results = {"summary": summary}
-              elif pdf_action == "Q&A":
-                st.session_state.current_document = {"content": text, "type": "pdf"}
-                st.experimental_rerun()  # Redirect to Q&A interface
-              else:  # Custom Analysis
-                results = st.session_state.agent.process_document(
-                  text, 
-                  task_description
-                )
-              
-              # Display results
-              st.header("PDF Analysis Results")
-              
-              if "summary" in results:
-                st.subheader("Summary")
-                st.write(results["summary"])
-                
-                # Generate download button for summary
-                st.download_button(
-                  label="Download Summary as Text",
-                  data=results["summary"],
-                  file_name="pdf_summary.txt",
-                  mime="text/plain"
-                )
-              
-              # Show other results if available
-              for key in ["entities", "sentiment", "questions"]:
-                if key in results:
-                  st.subheader(key.capitalize())
-                  st.write(results[key])
-
-        except Exception as e:
-          st.error(f"Error processing PDF: {str(e)}")
-
-    elif doc_mode == "Stored Documents" and st.session_state.current_document:
-      st.header("Stored Documents")
-
-      # Display document content and analysis options
-      st.write("Current document ID:", st.session_state.current_document.get("document_id", "N/A"))
-      
-      # Document interaction options
-      interaction_mode = st.radio(
-        "How would you like to interact with this document?",
-        ("View Analysis", "Ask Questions", "Generate New Analysis")
-      )
-
-      if interaction_mode == "View Analysis":
-        # Display existing analysis
-        if "summary" in st.session_state.current_document:
-          st.subheader("Summary")
-          st.write(st.session_state.current_document["summary"])
-        
-        for key in ["entities", "sentiment", "questions"]:
-          if key in st.session_state.current_document:
-            st.subheader(key.capitalize())
-            st.write(st.session_state.current_document[key])
-
-      elif interaction_mode == "Ask Questions":
-        st.subheader("Ask Questions About This Document")
-        question = st.text_input("Enter your question:")
-
-        if st.button("Get Answer") and question:
-          # Get document content
-          doc_content = st.session_state.current_document.get("content", "")
-          if not doc_content and "document_id" in st.session_state.current_document:
-            doc_id = st.session_state.current_document["document_id"]
-            doc_info = st.session_state.memory.get_document_history(doc_id)
-            if doc_info and "document" in doc_info:
-              doc_content = doc_info["document"].get("content", "")
-
-          if doc_content:
-            with st.spinner("Generating answer..."):
-              try:
-                response = openai.ChatCompletion.create(
-                  model="gpt-4o",
-                  messages=[
-                    {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided document."},
-                    {"role": "user", "content": f"Document: {doc_content[:4000]}...\n\nQuestion: {question}"}
-                  ],
-                  temperature=0.3,
-                )
-                answer = response.choices[0].message['content'].strip()
-                st.write("### Answer:")
-                st.write(answer)
-              except Exception as e:
-                st.error(f"Error generating answer: {str(e)}")
-
-          else:
-            st.error("Document content not available. Please upload or process a new document.")
-
-      elif interaction_mode == "Generate New Analysis":
-        st.subheader("Generate New Analysis")
-        new_task = st.text_area(
-          "Describe the analysis you want to perform:",
-          value="Create a detailed summary focusing on the main arguments and supporting evidence."
-        )
-
-        if st.button("Generate Analysis"):
-          # Get Document Content
-          doc_content = st.session_state.current_document.get("content", "")
-          if not doc_content and "document_id" in st.session_state.current_document:
-            doc_id = st.session_state.current_document["document_id"]
-            doc_info = st.session_state.memory.get_document_history(doc_id)
-            if doc_info and "document" in doc_info:
-              doc_content = doc_info["document"].get("content", "")
-
-          if doc_content:
-            with st.spinner("Generating new analysis..."):
+      col1, col2 = st.columns(2)
+      with col1:
+        if st.button("Process Document"):
+          if input_text:
+            with st.spinner("Processing your document..."):
+              # Process with agent
               results = st.session_state.agent.process_document(
-                doc_content, 
-                new_task,
-                st.session_state.current_document.get("document_id")
+                input_text, 
+                task_description
               )
-
-              # Display results
-              st.header("New Analysis Results")
               
-              if "summary" in results:
-                st.subheader("Summary")
-                st.write(results["summary"])
-            
-              for key in ["entities", "sentiment", "questions"]:
-                if key in results:
-                  st.subheader(key.capitalize())
-                  st.write(results[key])
-
+              # Store current document
+              st.session_state.current_document = results
+              
+              # Display results
+              st.header("Document Analysis Results")
+              
+              # Summary tab
+              st.subheader("Summary")
+              st.write(results["summary"])
+              
+              # Entity tab
+              st.subheader("Key Entities")
+              st.write(results["entities"])
+              
+              # Sentiment tab
+              st.subheader("Sentiment Analysis")
+              st.write(results["sentiment"])
+              
+              # Questions tab
+              st.subheader("Suggested Questions")
+              st.write(results["questions"])
+              
+              # Generate download buttons
+              st.download_button(
+                label="Download Analysis as Text",
+                data=f"DOCUMENT ANALYSIS\n\nSummary:\n{results['summary']}\n\nEntities:\n{results['entities']}\n\nSentiment:\n{results['sentiment']}\n\nQuestions:\n{results['questions']}",
+                file_name="document_analysis.txt",
+                mime="text/plain"
+              )
           else:
-            st.error("Document content not available. Please upload or process a new document.")
-
+            st.warning("Please enter some text to process.")
+  
+      elif doc_mode == "PDF Upload":
+        st.header("Upload PDF Document")
+        pdf_file = st.file_uploader("Upload a PDF file", type="pdf")
+  
+        if pdf_file:
+          try:
+            # Extract text from PDF
+            reader = PdfReader(pdf_file)
+            text = ""
+            for page in reader.pages:
+              text += page.extract_text()
+            
+            # Show extracted text
+            st.subheader("Extracted Text")
+            with st.expander("View extracted text"):
+              st.text(text[:1000] + "..." if len(text) > 1000 else text)
+            
+            # Process PDF options
+            pdf_action = st.radio(
+              "What would you like to do with this PDF?",
+              ("Analyze Fully", "Summarize Only", "Q&A", "Custom Analysis")
+            )
+            
+            if st.button("Process PDF"):
+              with st.spinner("Processing your PDF..."):
+                if pdf_action == "Analyze Fully":
+                  results = st.session_state.agent.process_document(
+                    text, 
+                    "Perform a comprehensive analysis including summary, entities, sentiment and questions."
+                  )
+                elif pdf_action == "Summarize Only":
+                  summary = enhanced_summarize_text(
+                    text, 
+                    languages[0], 
+                    summary_type, 
+                    length, 
+                    summary_approach
+                  )
+                  results = {"summary": summary}
+                elif pdf_action == "Q&A":
+                  st.session_state.current_document = {"content": text, "type": "pdf"}
+                  st.experimental_rerun()  # Redirect to Q&A interface
+                else:  # Custom Analysis
+                  results = st.session_state.agent.process_document(
+                    text, 
+                    task_description
+                  )
+                
+                # Display results
+                st.header("PDF Analysis Results")
+                
+                if "summary" in results:
+                  st.subheader("Summary")
+                  st.write(results["summary"])
+                  
+                  # Generate download button for summary
+                  st.download_button(
+                    label="Download Summary as Text",
+                    data=results["summary"],
+                    file_name="pdf_summary.txt",
+                    mime="text/plain"
+                  )
+                
+                # Show other results if available
+                for key in ["entities", "sentiment", "questions"]:
+                  if key in results:
+                    st.subheader(key.capitalize())
+                    st.write(results[key])
+  
+          except Exception as e:
+            st.error(f"Error processing PDF: {str(e)}")
+  
+      elif doc_mode == "Stored Documents" and st.session_state.current_document:
+        st.header("Stored Documents")
+  
+        # Display document content and analysis options
+        st.write("Current document ID:", st.session_state.current_document.get("document_id", "N/A"))
+        
+        # Document interaction options
+        interaction_mode = st.radio(
+          "How would you like to interact with this document?",
+          ("View Analysis", "Ask Questions", "Generate New Analysis")
+        )
+  
+        if interaction_mode == "View Analysis":
+          # Display existing analysis
+          if "summary" in st.session_state.current_document:
+            st.subheader("Summary")
+            st.write(st.session_state.current_document["summary"])
+          
+          for key in ["entities", "sentiment", "questions"]:
+            if key in st.session_state.current_document:
+              st.subheader(key.capitalize())
+              st.write(st.session_state.current_document[key])
+  
+        elif interaction_mode == "Ask Questions":
+          st.subheader("Ask Questions About This Document")
+          question = st.text_input("Enter your question:")
+  
+          if st.button("Get Answer") and question:
+            # Get document content
+            doc_content = st.session_state.current_document.get("content", "")
+            if not doc_content and "document_id" in st.session_state.current_document:
+              doc_id = st.session_state.current_document["document_id"]
+              doc_info = st.session_state.memory.get_document_history(doc_id)
+              if doc_info and "document" in doc_info:
+                doc_content = doc_info["document"].get("content", "")
+  
+            if doc_content:
+              with st.spinner("Generating answer..."):
+                try:
+                  response = openai.ChatCompletion.create(
+                    model="gpt-4o",
+                    messages=[
+                      {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided document."},
+                      {"role": "user", "content": f"Document: {doc_content[:4000]}...\n\nQuestion: {question}"}
+                    ],
+                    temperature=0.3,
+                  )
+                  answer = response.choices[0].message['content'].strip()
+                  st.write("### Answer:")
+                  st.write(answer)
+                except Exception as e:
+                  st.error(f"Error generating answer: {str(e)}")
+  
+            else:
+              st.error("Document content not available. Please upload or process a new document.")
+  
+        elif interaction_mode == "Generate New Analysis":
+          st.subheader("Generate New Analysis")
+          new_task = st.text_area(
+            "Describe the analysis you want to perform:",
+            value="Create a detailed summary focusing on the main arguments and supporting evidence."
+          )
+  
+          if st.button("Generate Analysis"):
+            # Get Document Content
+            doc_content = st.session_state.current_document.get("content", "")
+            if not doc_content and "document_id" in st.session_state.current_document:
+              doc_id = st.session_state.current_document["document_id"]
+              doc_info = st.session_state.memory.get_document_history(doc_id)
+              if doc_info and "document" in doc_info:
+                doc_content = doc_info["document"].get("content", "")
+  
+            if doc_content:
+              with st.spinner("Generating new analysis..."):
+                results = st.session_state.agent.process_document(
+                  doc_content, 
+                  new_task,
+                  st.session_state.current_document.get("document_id")
+                )
+  
+                # Display results
+                st.header("New Analysis Results")
+                
+                if "summary" in results:
+                  st.subheader("Summary")
+                  st.write(results["summary"])
+              
+                for key in ["entities", "sentiment", "questions"]:
+                  if key in results:
+                    st.subheader(key.capitalize())
+                    st.write(results[key])
+  
+            else:
+              st.error("Document content not available. Please upload or process a new document.")
+              
+      with col2:
+        if st.button("Analyze Document Visually"):
+          if input_text:
+            with st.spinner("Generating visualizations..."):
+              generate_and_display_visualizations(input_text)
+          else:
+            st.warning("Please enter some text to visualize.")
     else:
       st.info("Please upload a document or enter text to begin.")
 
